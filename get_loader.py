@@ -153,19 +153,26 @@ def get_loader(root_folder,
 def main():
     # Define the transform to be applied to the images
     transform = transforms.Compose(
-		[
+        [
             # Resize the images to 224x224
-			transforms.Resize((224, 224)),
+            transforms.Resize((224, 224)),
             # Convert the images to PyTorch tensors
-			transforms.ToTensor(),
-		]
-	)
+            transforms.ToTensor(),
+        ]
+    )
 
     # Create a DataLoader for the dataset located at the specified path
-    dataloader = get_loader("/Users/nde-la-f/Documents/Image_caption/flickr8k/images/",
-                        	annotation_file="/Users/nde-la-f/Documents/Image_caption/flickr8k/captions.txt",
-                        	transform = transform)
-    
+    images_path = input("Enter the images path (or press Enter to use the default path): ")
+    annotations_path = input("Enter the annotations path (or press Enter to use the default path): ")
+
+    if not images_path:
+        images_path = "/Users/nde-la-f/Documents/Image_caption/flickr8k/images/"
+
+    if not annotations_path:
+        annotations_path = "/Users/nde-la-f/Documents/Image_caption/flickr8k/captions.txt"
+
+    dataloader = get_loader(images_path, annotation_file=annotations_path, transform=transform)
+
     # Iterate over the DataLoader
     for idx, (imgs, captions) in enumerate(dataloader):
         # Print the shape of the image and caption tensors for each batch
