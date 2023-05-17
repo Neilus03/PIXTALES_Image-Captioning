@@ -7,6 +7,7 @@ from utils import save_checkpoint, load_checkpoint, print_examples
 
 from get_loader import get_loader
 from model import CNNtoRNN
+import matplotlib.pyplot as plt
 
 def train():
     # Define the image transformations
@@ -18,11 +19,10 @@ def train():
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),  # Normalize the image tensor
         ]
     )
-    
-    # Set the value for print_interval
-    print_interval = 500  # Print examples every 500 iterations
 
-    
+    # Set the value for print_interval
+    print_interval = 100  # Print examples every 100 iterations
+
     images_path = input("Enter the images path (or press Enter to use the default path): ")
     annotations_path = input("Enter the annotations path (or press Enter to use the default path): ")
 
@@ -74,18 +74,11 @@ def train():
     # Set the model to training mode
     model.train()
 
-    for epoch in range(num_epochs):
-        # Print examples of generated captions at the beginning of each epoch
-        print_examples(model, device, dataset, num_examples=2)
+    # Initialize a list to store the training loss values
+    train_loss_values = []
 
-        if save_model:
-            # Save the current model checkpoint
-            checkpoint = {
-                "state_dict": model.state_dict(),
-                "optimizer": optimizer.state_dict(),
-                "step": step,
-            }
-            save_checkpoint(checkpoint)
+    for epoch in range(num_epochs):
+        total_loss = 0.0  # Variable to track the total loss for the epoch
 
         for idx, (imgs, captions) in enumerate(train_loader):
             imgs = imgs.to(device)
@@ -106,9 +99,35 @@ def train():
             loss.backward()  # Perform backward pass to calculate gradients
             optimizer.step()  # Update the weights using the gradients
 
+            # Accumulate the loss for the epoch
+            total_loss += loss.item()
+
             # Print examples of generated captions at specific intervals
             if (idx + 1) % print_interval == 0:
                 print_examples(model, device, dataset, num_examples=2)
+
+        # Calculate the average loss for the epoch
+        epoch_loss = total_loss / len(train_loader)
+        train_loss_values.append(epoch_loss)
+
+        # Print the epoch loss
+        print(f"Epoch [{epoch+1}/{num_epochs}] - Loss: {epoch_loss:.4f}")
+
+    # Plot the training loss curve
+    plt.plot(range(1, num_epochs+1), train_loss_values)
+    plt.xlabel("Epochs")
+    plt.ylabel("Loss")
+    plt.title("Training Loss Curve")
+    plt.show()
+
+    if save_model:
+        # Save the final model checkpoint
+        checkpoint = {
+            "state_dict": model.state_dict(),
+            "optimizer": optimizer.state_dict(),
+            "step": step,
+        }
+        save_checkpoint(checkpoint)
 
 if __name__ == "__main__":
     train()
