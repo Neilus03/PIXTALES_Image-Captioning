@@ -123,10 +123,10 @@ class Padding:
 def get_loader(root_folder, 
                annotation_file, 
                transform,  
-               batch_size = 32, 
-               num_workers = 4, 
-               shuffle = True, 
-               pin_memory = True,):
+               batch_size=32, 
+               num_workers=4, 
+               shuffle=True, 
+               pin_memory=True):
     
     # Create a FlickrDataset object for the given root_folder and annotation_file, using the provided transform
 	dataset = FlickrDataset(root_folder, annotation_file, transform = transform)
@@ -147,7 +147,7 @@ def get_loader(root_folder,
 	)
  
     # Return the DataLoader
-	return loader
+	return loader, dataset
 
 # The main function is the entry point of the script
 def main():
