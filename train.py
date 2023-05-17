@@ -31,7 +31,7 @@ def train():
     # Get the data loader and dataset
     train_loader, dataset = get_loader(
         root_folder=images_path,
-        annotation_files=annotations_path,
+        annotation_file=annotations_path,
         transform=transform,
         num_workers=4
     )
