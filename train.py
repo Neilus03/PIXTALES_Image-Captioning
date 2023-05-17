@@ -19,6 +19,10 @@ def train():
         ]
     )
     
+    # Set the value for print_interval
+    print_interval = 500  # Print examples every 500 iterations
+
+    
     images_path = input("Enter the images path (or press Enter to use the default path): ")
     annotations_path = input("Enter the annotations path (or press Enter to use the default path): ")
 
