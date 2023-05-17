@@ -179,4 +179,3 @@ def main():
         print(imgs.shape)
         print(captions.shape)
 
-main()
