@@ -34,26 +34,40 @@ def load_checkpoint(checkpoint, model, optimizer):
     return step
 
 
-def print_examples(model, device, dataset, num_examples=2):
+def print_and_export_examples(model, device, dataset, num_examples=2, export_file="examples.txt"):
     """
-    Generate and print examples of image captions using the trained model.
+    Generate examples of image captions using the trained model and print them in the console.
+    Additionally, export the examples to a file.
     
     Args:
         model: The trained image captioning model.
         device: The device (e.g., 'cpu' or 'cuda') to perform computations on.
         dataset: The dataset object containing image-caption pairs.
         num_examples (int): The number of examples to generate and print.
+        export_file (str): The file to export the examples to.
     """
     model.eval()
     indices = np.random.randint(low=0, high=len(dataset), size=num_examples)
-    
-    with torch.no_grad():
+
+    with torch.no_grad(), open(export_file, 'w') as f:
         for idx in indices:
-            image, _ = dataset[idx]
+            image, caption = dataset[idx]
             image = image.unsqueeze(0).to(device)
-            output = model.sample(image)
-            caption = [dataset.vocab.itos[token] for token in output]
             caption = ' '.join(caption)
-            print(f"Example {idx} - Generated Caption: {caption}")
-    
+
+            # Generate caption using the model's caption_image method
+            generated_caption = model.caption_image(image, dataset.vocab)
+            generated_caption = ' '.join(generated_caption)
+
+            # Print the example in the console
+            print(f"Example {idx}:\n")
+            print(f"Actual Caption: {caption}\n")
+            print(f"Generated Caption: {generated_caption}\n")
+
+            # Write the example to the export file
+            f.write(f"Example {idx}:\n")
+            f.write(f"Actual Caption: {caption}\n")
+            f.write(f"Generated Caption: {generated_caption}\n")
+            f.write("\n")
+
     model.train()

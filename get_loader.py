@@ -1,5 +1,5 @@
 # Text -> Numbers
-# Needof a vocabulary that maps each word to an id
+# Need of a vocabulary that maps each word to an id
 # Set Up Pytorch dataset to load the data
 # Set up padding of every batch (all examples need to have same seqlen)
 # Set up DataLoader
@@ -54,7 +54,7 @@ class Vocabulary:
                     self.itos[idx] = word
                     idx += 1
 
-     # Method to convert text into numericalized tokens
+    # Method to convert text into numericalized tokens
     def numericalize(self, text):
         tokenized_text = self.tokenizer_eng(text)
         tokens = []
@@ -86,7 +86,7 @@ class FlickrDataset(Dataset):
         return len(self.df)  # Return the total number of items in the dataset
 
     def __getitem__(self, id):
-        caption = self.captions[id]  # Get the caption corresponding to the id
+        caption = self.captions[id]  # Get the caption corresponding to the id (I think there might be an error bc there are 5 cations for the same id)
         img_id = self.imgs[id]  # Get the image id corresponding to the id
         img = Image.open(os.path.join(self.root_dir, img_id)).convert("RGB")  # Open and convert the image
 
@@ -98,7 +98,8 @@ class FlickrDataset(Dataset):
         numerical_caption += self.vocab.numericalize(caption)
         numerical_caption.append(self.vocab.stoi["<EOS>"])
 
-        return img, torch.tensor(numerical_caption)  # Return the image and its corresponding numericalized caption
+        return img, torch.tensor(numerical_caption)  # Return the image and its corresponding numericalized caption 
+    												 # (numericalized captions = [1,stoi(W1),...,stoi(Wn),2])
     
 # Padding class is used to pad the captions to the same length for each batch
 class Padding:
@@ -123,31 +124,30 @@ class Padding:
 def get_loader(root_folder, 
                annotation_file, 
                transform,  
-               batch_size=32, 
+               batch_size=256, 
                num_workers=4, 
                shuffle=True, 
-               pin_memory=True):
+               pin_memory=True,
+               ):
     
     # Create a FlickrDataset object for the given root_folder and annotation_file, using the provided transform
-	dataset = FlickrDataset(root_folder, annotation_file, transform = transform)
+    dataset = FlickrDataset(root_folder, annotation_file, transform=transform)
 
     # Get the index of the <PAD> token in the vocabulary
-	pad_idx = dataset.vocab.stoi["<PAD>"]
-	
+    pad_idx = dataset.vocab.stoi["<PAD>"]
+
     # Create a DataLoader for the dataset
-	loader = DataLoader(
-		dataset = dataset,
-		batch_size = batch_size,
-		num_workers = num_workers,
-		shuffle = shuffle,
-		pin_memory = pin_memory,
-        # Pass the Padding object as the collate_fn to the DataLoader
-        # The collate_fn is used to combine the individual items in the batch
-		collate_fn = Padding(pad_idx = pad_idx)
-	)
- 
-    # Return the DataLoader
-	return loader, dataset
+    loader = DataLoader(
+        dataset=dataset,
+        batch_size=batch_size,
+        num_workers=num_workers,
+        shuffle=shuffle,
+        pin_memory=pin_memory,
+        collate_fn=Padding(pad_idx=pad_idx)
+    )
+
+    # Return both the DataLoader and the dataset
+    return loader, dataset
 
 # The main function is the entry point of the script
 def main():

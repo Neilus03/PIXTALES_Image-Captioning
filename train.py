@@ -5,7 +5,7 @@ import torchvision.transforms as transforms
 import matplotlib.pyplot as plt
 from torch.utils.tensorboard import SummaryWriter
 
-from utils import save_checkpoint, load_checkpoint, print_examples
+from utils import save_checkpoint, load_checkpoint, print_and_export_examples
 from get_loader import get_loader
 from model import CNNtoRNN
 
@@ -21,8 +21,6 @@ def train():
         ]
     )
 
-    # Set the value for print_interval
-    print_interval = 100  # Print examples every 100 iterations
 
     images_path = input("Enter the images path (or press Enter to use the default path): ")
     annotations_path = input("Enter the annotations path (or press Enter to use the default path): ")
@@ -38,7 +36,7 @@ def train():
         root_folder=images_path,
         annotation_file=annotations_path,
         transform=transform,
-        num_workers=4
+        num_workers=4,
     )
 
     # Set CUDA benchmark for improved performance
@@ -56,7 +54,7 @@ def train():
     hidden_size = 256  # Number of units in the hidden state of the RNN
     vocab_size = len(dataset.vocab)  # Size of the vocabulary
     learning_rate = 3e-4  # Learning rate for the optimizer
-    num_epochs = 100  # Number of training epochs
+    num_epochs = 20  # Number of training epochs
     num_layers = 1  # Number of layers in the RNN
 
     # Create a SummaryWriter for TensorBoard visualization
@@ -70,7 +68,7 @@ def train():
 
     if load_model:
         # Load the saved checkpoint
-        step = load_checkpoint(torch.load("my_checkpoint.pth.tar"), model, optimizer)
+        step = load_checkpoint(torch.load("checkpoint.pth.tar"), model, optimizer)
 
     # Set the model to training mode
     model.train()
@@ -84,10 +82,11 @@ def train():
         for idx, (imgs, captions) in enumerate(train_loader):
             imgs = imgs.to(device)
             captions = captions.to(device)
-
+            
             # Forward pass through the model
             outputs = model(imgs, captions[:-1])  # We want the model to predict the end token
-
+            #print(outputs) 
+			
             # Calculate the loss
             loss = criterion(outputs.reshape(-1, outputs.shape[2]), captions.reshape(-1))
 
@@ -102,10 +101,6 @@ def train():
 
             # Accumulate the loss for the epoch
             total_loss += loss.item()
-
-            # Print examples of generated captions at specific intervals
-            if (idx + 1) % print_interval == 0:
-                print_examples(model, device, dataset, num_examples=2)
 
         # Calculate the average loss for the epoch
         epoch_loss = total_loss / len(train_loader)
@@ -128,7 +123,10 @@ def train():
             "optimizer": optimizer.state_dict(),
             "step": step,
         }
-        save_checkpoint(checkpoint)
+        save_checkpoint(checkpoint, "checkpoint.pth")
+    
+    # Print and export examples after training
+    print_and_export_examples(model, device, dataset, num_examples=5, export_file="examples.txt")
 
 if __name__ == "__main__":
     train()

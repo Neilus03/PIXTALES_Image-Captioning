@@ -2,12 +2,12 @@ import torch
 import torch.nn as nn
 import torchvision.models as models
 
-import torchvision.models as models
-
 class EncoderCNN(nn.Module):
-    def __init__(self, embed_size, train_CNN=False, p_dropout=0.5):
+    def __init__(self, embed_size, train_CNN=True, p_dropout=0.5):
         super(EncoderCNN, self).__init__()
 
+        self.train_CNN = train_CNN
+        
         # Load the pretrained ResNet-50 model
         self.resnet = models.resnet50(pretrained=True)
 
@@ -71,7 +71,7 @@ class DecoderRNN(nn.Module):
 class CNNtoRNN(nn.Module):
     def __init__(self, embed_size, hidden_size, vocab_size, num_layers):
         super(CNNtoRNN, self).__init__()
-
+        
         # Instantiate the EncoderCNN module
         self.EncoderCNN = EncoderCNN(embed_size)
 
@@ -88,15 +88,15 @@ class CNNtoRNN(nn.Module):
         # Return the final output logits
         return outputs
     
-    def caption_image(self, image, vocabulary, max_length = 40):
+    def caption_image(self, image, vocabulary, max_length = 42):
         # Initialize an empty list to store the generated caption
         result_caption = []
         
         # Disable gradient calculation
         with torch.no_grad():
-            
-            # Add a batch dimension to the image tensor
-            x = self.EncoderCNN.unsqueeze(0)
+        
+            # Pass the image through the EncoderCNN model to extract features
+            x = self.EncoderCNN(image)
             
             # Initialize the LSTM states to None
             states = None
@@ -108,14 +108,20 @@ class CNNtoRNN(nn.Module):
                 hiddens, states = self.DecoderRNN.lstm(x, states)
                 
                 # Pass the LSTM output through the linear layer to get the output logits
-                output = DecoderRNN.linear(hiddens.unsqueeze(0))
+                output = self.DecoderRNN.linear(hiddens.unsqueeze(0))
+                #print is to debug
+                #print(output.shape)
                 
                 # Get the predicted word by taking the index of the highest logit value
-                predicted = output.argmax(1)
+
+                predicted = output.argmax(2).squeeze()
+                #is argmax(2) bc due to previous unsqueeze the shape is [1,1,2994] instead of [1,2994]
+                #Also is worth to note that the squeeze is used to lower one dimension for inputting it to the lstm which takes at most 3dimensions
                 
                 '''
                 ANOTHER OPTION WOULD BE TO GET THE PREDICTED WORD SAMPLING INSTEAD OF THE PREVIOUS GREEDY APPROACH
-                (neil: a mi me gusta más, decid vosotros)
+                (neil: a mi me gusta más, decid vosotros,
+                 dani: Tb me gusta mas)
                 
                 # Apply softmax to convert output logits to probabilities
         		probs = output.squeeze(0).softmax(dim=0)
@@ -127,8 +133,8 @@ class CNNtoRNN(nn.Module):
                 # Append the predicted word index to the result caption list
                 result_caption.append(predicted.item())
                 
-                # Embed the predicted word and add a batch dimension
-                x = self.DecoderRNN.embed(predicted).unsqueeze(0)
+                # Convert the predicted word back to a tensor and add a batch dimension
+                x = self.DecoderRNN.embed(torch.tensor(predicted.item(), device=x.device)).unsqueeze(0)
                 
                 # Check if the predicted word is the end-of-sequence token ("<EOS>")
                 if vocabulary.itos[predicted.item()] == "<EOS>":
