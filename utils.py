@@ -3,7 +3,7 @@ import torch.nn.functional as F
 import numpy as np
 
 
-def save_checkpoint(state, filename):
+def save_checkpoint(state, filename="checkpoint.pth"):
     """
     Save the model checkpoint to a file.
     

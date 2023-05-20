@@ -124,7 +124,7 @@ class Padding:
 def get_loader(root_folder, 
                annotation_file, 
                transform,  
-               batch_size=256, 
+               batch_size=32, 
                num_workers=4, 
                shuffle=True, 
                pin_memory=True,
