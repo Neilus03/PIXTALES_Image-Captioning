@@ -108,6 +108,14 @@ def train():
         epoch_loss = total_loss / len(train_loader)
         train_loss_values.append(epoch_loss)
         print(f"End of Epoch [{epoch+1}/{num_epochs}], Loss: {epoch_loss:.4f}")
+        if save_model:
+            # Save the final model checkpoint
+            checkpoint = {
+                "state_dict": model.state_dict(),
+                "optimizer": optimizer.state_dict(),
+                "step": step,
+            }
+            save_checkpoint(checkpoint, "checkpoint"+str(epoch+1)+".pth")
 
     # Plot the training loss curve
     plt.plot(range(1, num_epochs+1), train_loss_values)
@@ -129,6 +137,3 @@ def train():
     print_and_export_examples(model, device, dataset, num_examples=5, export_file="examples.txt")
 if __name__ == "__main__":
     train()
-
-
-
