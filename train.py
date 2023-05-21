@@ -69,7 +69,7 @@ def train():
 
     if load_model:
         # Load the saved checkpoint
-        step = load_checkpoint(torch.load("/home/xnmaster/PIXTALES-2/checkpoint.pth"), model, optimizer)
+        step = load_checkpoint(torch.load("/content/checkpoint1.pth"), model, optimizer)
 
     # Set the model to training mode
     model.train()
@@ -138,3 +138,4 @@ def train():
     print_and_export_examples(model, device, dataset, num_examples=5, export_file="examples.txt")
 if __name__ == "__main__":
     train()
+
