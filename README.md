@@ -1,6 +1,6 @@
 # PIXTALES
 
-Welcome to PIXTALES, a deep learning approach to image captioning. The magic behind this repository is all about connecting visuals to language - generating a narrative for every image. Our project is driven by the power of neural networks and deep learning, aiming to create meaningful and accurate descriptions for any image.
+Welcome to PIXTALES - The story behind the picture, a deep learning approach to image captioning. The magic behind this repository is all about connecting visuals to language - generating a narrative for every image. Our project is driven by the power of neural networks and deep learning, aiming to create meaningful and accurate descriptions for any image.
 
 ## What is PIXTALES?
 
