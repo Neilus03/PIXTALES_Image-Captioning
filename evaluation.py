@@ -99,7 +99,7 @@ def main():
     ])
 
     # Specify the paths to the trained model checkpoint and evaluation dataset
-    model_checkpoint_path = "/home/xnmaster/PIXTALES-2/checkpoint.pth"
+    model_checkpoint_path = "/home/xnmaster/PIXTALES-2/checkpoint2.pth"
     images_path = "/home/xnmaster/PIXTALES-2/Images/"
     annotations_path = "/home/xnmaster/PIXTALES-2/captions.txt"
 
