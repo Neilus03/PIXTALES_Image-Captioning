@@ -78,7 +78,7 @@ def train():
     train_loss_values = []
     
 
-    print_every = 100  # Change this to control how often you want to print
+    print_every = 50  # Change this to control how often you want to print
     
     for epoch in range(num_epochs):
         total_loss = 0.0  # Variable to track the total loss for the epoch
@@ -108,6 +108,7 @@ def train():
         epoch_loss = total_loss / len(train_loader)
         train_loss_values.append(epoch_loss)
         print(f"End of Epoch [{epoch+1}/{num_epochs}], Loss: {epoch_loss:.4f}")
+        
         if save_model:
             # Save the final model checkpoint
             checkpoint = {
@@ -131,7 +132,7 @@ def train():
             "optimizer": optimizer.state_dict(),
             "step": step,
         }
-        save_checkpoint(checkpoint, "checkpoint.pth")
+        save_checkpoint(checkpoint, "final_checkpoint.pth")
     
     # Print and export examples after training
     print_and_export_examples(model, device, dataset, num_examples=5, export_file="examples.txt")
