@@ -69,7 +69,7 @@ def train():
 
     if load_model:
         # Load the saved checkpoint
-        step = load_checkpoint(torch.load("/content/checkpoint1.pth"), model, optimizer)
+        step = load_checkpoint(torch.load("./checkpoint11.pth"), model, optimizer)
 
     # Set the model to training mode
     model.train()
@@ -118,13 +118,20 @@ def train():
             }
             save_checkpoint(checkpoint, "checkpoint"+str(epoch+1)+".pth")
 
+        # Plot the training loss curve
+        plt.plot(range(1, num_epochs+1), train_loss_values)
+        plt.xlabel("Epochs")
+        plt.ylabel("Loss")
+        plt.title(f"Training Loss Curve in epoch {epoch + 1}")
+        plt.show()
+
     # Plot the training loss curve
     plt.plot(range(1, num_epochs+1), train_loss_values)
     plt.xlabel("Epochs")
     plt.ylabel("Loss")
-    plt.title("Training Loss Curve")
+    plt.title("Training Loss Curve after training")
     plt.show()
-
+    
     if save_model:
         # Save the final model checkpoint
         checkpoint = {
@@ -135,7 +142,8 @@ def train():
         save_checkpoint(checkpoint, "final_checkpoint.pth")
     
     # Print and export examples after training
-    print_and_export_examples(model, device, dataset, num_examples=5, export_file="examples.txt")
+    #print_and_export_examples(model, device, dataset, num_examples=5, export_file="examples.txt")
+
 if __name__ == "__main__":
     train()
 
