@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Captioning Demo</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#upload-form').submit(function(event) {
+                event.preventDefault();
+                var formData = new FormData(this);
+
+                $.ajax({
+                    url: '/predict',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        // Display the predicted caption and image URL
+                        $('#predicted-caption').text(response.caption);
+                        $('#predicted-image').attr('src', response.image_url);
+                        $('#predicted-result').show();
+                    },
+                    error: function() {
+                        alert('An error occurred during prediction.');
+                    }
+                });
+            });
+        });
+    </script>
+    <style>
+        #predicted-result {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Image Captioning Demo</h1>
+    <form id="upload-form" enctype="multipart/form-data">
+        <input type="file" name="image" accept="image/*" required>
+        <button type="submit">Upload</button>
+    </form>
+    <div id="predicted-result">
+        <h2>Predicted Caption:</h2>
+        <p id="predicted-caption"></p>
+        <img id="predicted-image" src="" alt="Predicted Image">
+    </div>
+</body>
+</html>
