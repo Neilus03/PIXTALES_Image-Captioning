@@ -13,7 +13,7 @@ class EncoderCNN(nn.Module):
         features = list(vgg16.features.children())[:-1]
         self.features = nn.Sequential(*features)
 
-    def forward(self, images):
+    def forward(self, images): 
         # Pass images through convolutional layers
         features = self.features(images)
 
