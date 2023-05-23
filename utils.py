@@ -33,6 +33,8 @@ def load_checkpoint(checkpoint, model, optimizer):
     print("Checkpoint loaded!")
     return step
 
+'''
+This function is not used anymore
 
 def print_and_export_examples(model, device, dataset, num_examples=2, export_file="examples.txt"):
     """
@@ -71,3 +73,4 @@ def print_and_export_examples(model, device, dataset, num_examples=2, export_fil
             f.write("\n")
 
     model.train()
+'''
