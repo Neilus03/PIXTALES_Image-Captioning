@@ -6,9 +6,7 @@ import matplotlib.pyplot as plt
 from torch.utils.tensorboard import SummaryWriter
 from datetime import datetime
 
-from utils_attention import save_checkpoint, load_checkpoint
-from get_loader_attention import get_loader
-from model_attention import CNNtoRNN
+
 
 
 def train():
@@ -27,16 +25,16 @@ def train():
     annotations_path = input("Enter the annotations path (or press Enter to use the default path): ")
 
     if not images_path:
-        images_path = "/Users/nde-la-f/Documents/Image_caption/flickr8k/images/"
+        images_path = "/content/drive/MyDrive/Deep Learning Project/archive/Images/"
 
     if not annotations_path:
-        annotations_path = "/Users/nde-la-f/Documents/Image_caption/flickr8k/captions.txt"
+        annotations_path = "/content/drive/MyDrive/Deep Learning Project/archive/captions.txt"
 
     # Get the data loader and dataset
     train_loader, dataset = get_loader(
         root_folder=images_path,
         annotation_file=annotations_path,
-        transform=transform,
+        transform=None,
         num_workers=4,
     )
 
@@ -77,9 +75,9 @@ def train():
     # Initialize a list to store the training loss values
     train_loss_values = []
     
-
     print_every = 50  # Change this to control how often you want to print
     
+    print('starting training ...')
     for epoch in range(num_epochs):
         total_loss = 0.0  # Variable to track the total loss for the epoch
         start_time = datetime.now()  # Start timing
@@ -88,7 +86,7 @@ def train():
             imgs = imgs.to(device)
             captions = captions.to(device)
             # Forward pass through the model
-            outputs = model(imgs, captions[:-1])  # We want the model to predict the end token
+            outputs = model(imgs, captions[:]) #originally  outputs = model(imgs, captions[:-1]) bcs we wanted to predict the EOS token
             loss = criterion(outputs.reshape(-1, outputs.shape[2]), captions.reshape(-1))
             
             #Log the training loss in TensorBoard 
