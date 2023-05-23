@@ -10,13 +10,11 @@ class EncoderCNN(nn.Module):
         vgg16 = models.vgg16(pretrained=True)
         features = list(vgg16.features.children())[:-1]  # remove the last max pooling layer
         self.features = nn.Sequential(*features)
-        self.reduce_dim = nn.Conv2d(512, 256, kernel_size=1)  # 1x1 convolution to reduce the depth to 256
 
     def forward(self, images):
         features = self.features(images)  # Shape: [batch_size, 512, 14, 14]
-        features = self.reduce_dim(features)  # Shape: [batch_size, 256, 14, 14]
-        features = features.permute(0, 2, 3, 1)  # Shape: [batch_size, 14, 14, 256]
-        features = features.view(features.size(0), -1, features.size(-1))  # Shape: [batch_size, 196, 256]
+        features = features.permute(0, 2, 3, 1)  # Shape: [batch_size, 14, 14, 512]
+        features = features.view(features.size(0), -1, features.size(-1))  # Shape: [batch_size, 196, 512]
         return features
 
 class Attention(nn.Module):
