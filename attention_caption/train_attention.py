@@ -47,7 +47,7 @@ def train():
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
     # Set flags for loading and saving models
-    load_model = True
+    load_model = False
     save_model = True
 
     # Hyperparameters

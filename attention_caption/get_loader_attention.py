@@ -130,6 +130,16 @@ def get_loader(root_folder,
                pin_memory=True,
                ):
     
+    #define the transform to be applied, I choose 224 by 224 bc is the size of the images in Show attend and tell paper which I was inspired on
+    transform = transforms.Compose(
+		[
+			#resize to 224x224
+			transforms.Resize((224,224)),
+   
+			#convert images to pytorch tensors
+			transforms.ToTensor(),
+		]
+	)
     # Create a FlickrDataset object for the given root_folder and annotation_file, using the provided transform
     dataset = FlickrDataset(root_folder, annotation_file, transform=transform)
 
