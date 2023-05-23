@@ -1,9 +1,7 @@
 
-
 import torch
 import torch.nn as nn
 import torchvision.models as models
-
 
 # Encoder part of the model using a pre-trained VGG16
 class EncoderCNN(nn.Module):
@@ -16,18 +14,19 @@ class EncoderCNN(nn.Module):
         self.features = nn.Sequential(*features)
 
     def forward(self, images):
-        
         # Pass images through convolutional layers
-        features = self.features(images)  # Shape: [batch_size, 512, 14, 14]
-        
-        print("Shape of features after EncoderCNN: ", features.shape)  # Debug print
+        features = self.features(images)
+
+        # Debug print
+        print("Shape of features after EncoderCNN: ", features.shape) # [32, 512, 14, 14]
 
         # Permute the tensor dimensions
-        features = features.permute(0, 2, 3, 1)  # Shape: [batch_size, 14, 14, 512]
-        
+        features = features.permute(0, 2, 3, 1)
+        print("Shape of features after permuting: ", features.shape) # [32, 14, 14, 512]
+
         # Flatten the tensor
-        features = features.view(features.size(0), -1, features.size(-1))  # Shape: [batch_size, 196, 512]
-        
+        features = features.view(features.size(0), -1, features.size(-1))
+        print('features after applying view to flatten:', features.shape) # [32, 196, 512]
         return features
 
 # Dot-Product Attention
@@ -37,15 +36,19 @@ class DotProductAttention(nn.Module):
 
     def forward(self, encoder_outputs, decoder_hidden):
         
-        print("Shape of encoder_outputs: ", encoder_outputs.shape)  # Debug print
-        print("Shape of decoder_hidden before unsqueeze: ", decoder_hidden.shape)  # Debug print
-
+        # Debug prints   
+        print("Shape of encoder_outputs: ", encoder_outputs.shape) # [32, 196, 512]
+        print("Shape of decoder_hidden before unsqueeze: ", decoder_hidden.shape) # [1, 512]
 
         # Perform a batch matrix multiplication with encoder_outputs and decoder_hidden
         # Shape of attention_scores: [batch_size, num_pixels, 1]
-        attention_scores = torch.bmm(encoder_outputs, decoder_hidden.unsqueeze(2)).squeeze(2)
         
-        print("Shape of attention_scores: ", attention_scores.shape)  # Debug print
+        print('Shape of decoder_hidden after unsqueeze(2).shape:', decoder_hidden.unsqueeze(2).shape) # [1, 512, 1]
+
+        attention_scores = torch.bmm(encoder_outputs, decoder_hidden.unsqueeze(2)).squeeze(2)
+
+        # Debug print
+        print("Shape of attention_scores: ", attention_scores.shape)
 
         # Apply softmax to compute attention weights
         # Shape of attention_weights: [batch_size, num_pixels]
@@ -56,7 +59,6 @@ class DotProductAttention(nn.Module):
         context_vector = torch.sum(encoder_outputs * attention_weights.unsqueeze(2), dim=1)
         
         return context_vector, attention_weights
-
 
 # Decoder part of the model
 class DecoderRNN(nn.Module):
@@ -69,47 +71,57 @@ class DecoderRNN(nn.Module):
         self.vocab_size = vocab_size
 
         # Word embedding layer
-        self.embed = nn.Embedding(vocab_size, embed_size)
+        self.embed = nn.Embedding(vocab_size, embed_size) # from 2994 to 256
 
         # Attention layer
         self.attention = DotProductAttention()
 
-        # LSTM layer - Attention context vector and word embedding are inputs, so size is 2*embed_size
-        self.lstm = nn.LSTM(2*embed_size, hidden_size, num_layers, batch_first=True)
+        # LSTM layer - Attention context vector and word embedding are inputs, so size is 2*hidden_size
+        self.lstm = nn.LSTM(2*hidden_size, hidden_size, num_layers, batch_first=True)
 
         # Linear layer mapping from hidden dimension to vocab size
-        self.linear = nn.Linear(hidden_size, vocab_size)
+        self.linear = nn.Linear(hidden_size, vocab_size) #from 256 to 2994
 
     def forward(self, features, captions):
         # Get the word embeddings of the captions
-        embeddings = self.embed(captions)  # Shape: [batch_size, caption_length, embed_size]
-        
+        embeddings = self.embed(captions) 
+        print('Features shape: ', features.shape)
         # Initialize LSTM hidden state
-        h, c = torch.zeros(embeddings.shape[0], 1, self.hidden_size).to(embeddings.device), \
-               torch.zeros(embeddings.shape[0], 1, self.hidden_size).to(embeddings.device)
+        print("Embeddings shape at every pos:", embeddings.shape) # [32, 25, 256]
+        print("features after applying .size(-1):",features.size(-1))
+        h, c = torch.zeros(embeddings.shape[0], 32, features.size(-1)).to(embeddings.device), \
+               torch.zeros(embeddings.shape[0], 32, features.size(-1)).to(embeddings.device)
         
         # Store the outputs here
         outputs = torch.empty((embeddings.shape[0], captions.shape[1], self.vocab_size)).to(embeddings.device)
-
+        print("outputs shape:", outputs.shape) 
         # Iterating through each timestep in the captions' length
+        print("captions shape", captions.shape)
         for t in range(captions.shape[1]):
             # Compute the attention weights and apply to encoder features
             context_vector, _ = self.attention(features, h[-1])
+
+            print("context_vector shape: ",context_vector.shape)
+            print("context_vector.unsqueeze(1) shape: ",context_vector.unsqueeze(1).shape)
+            
+            print("embeddings[:, t] shape:", embeddings[:, t].shape)
+            print("embeddings[:, t].unsqueeze(1) shape:", embeddings[:, t].unsqueeze(1).shape)
             # Concatenate the context vector with the current word embedding
-            # Shape: [batch_size, 1, 2*embed_size]
             input_lstm = torch.cat((context_vector.unsqueeze(1), embeddings[:, t].unsqueeze(1)), dim=2)
             # Pass embeddings to LSTM
-            h, c = self.lstm(input_lstm, (h, c))  # Shape: [batch_size, 1, hidden_size]
+            print("shape of h:",h.shape)  
+            print("shape of c:",c.shape)
+            print("input_lstm shape:", input_lstm.shape)
+            h, c = self.lstm(input_lstm, (h, c))
+            
             # Pass LSTM output through linear layer to get scores for each word in the vocabulary
-            output = self.linear(h.squeeze(1))  # Shape: [batch_size, vocab_size]
+            output = self.linear(h.squeeze(1)) 
             # Store the output
             outputs[:, t, :] = output
 
         return outputs
 
-
 # Full model combining the encoder and the decoder
-# Full model combining the Encoder (CNN) and the Decoder (RNN with attention)
 class CNNtoRNN(nn.Module):
     def __init__(self, embed_size, hidden_size, vocab_size, num_layers):
         super(CNNtoRNN, self).__init__()
@@ -122,29 +134,27 @@ class CNNtoRNN(nn.Module):
 
     def forward(self, images, captions):
         # Extract high-level visual features from input images using the encoder
-        features = self.EncoderCNN(images)  # Shape: [batch_size, 196, 512]
+        features = self.EncoderCNN(images) 
 
         # Generate a sequence of words (caption) from the image features using the decoder
-        outputs = self.DecoderRNN(features, captions)  # Shape: [batch_size, caption_length, vocab_size]
+        outputs = self.DecoderRNN(features, captions)
         return outputs
 
     def caption_image(self, image, vocabulary, max_length=50):
         result_caption = []
 
-        # Switch off gradients computation because we are in inference mode
         with torch.no_grad():
             # Extract image features using the encoder
-            x = self.EncoderCNN(image).unsqueeze(0)  # Shape: [1, 196, 512]
+            x = self.EncoderCNN(image).unsqueeze(0)
 
             # LSTM states initialization
             states = None
 
-            # Generate a caption for the image up to the max_length or until <EOS> token is found
             for _ in range(max_length):
                 # LSTM forward step
                 h, _ = self.DecoderRNN.lstm(x, states)
                 # Map LSTM hidden state output to the vocabulary size to get word scores
-                output = self.DecoderRNN.linear(h.squeeze(0))  # Shape: [1, vocab_size]
+                output = self.DecoderRNN.linear(h.squeeze(0))
                 # Pick the word with the highest score as the next word of the generated caption
                 _, predicted = output.max(1)
                 # Store the generated word to the result caption
@@ -155,9 +165,7 @@ class CNNtoRNN(nn.Module):
                     break
 
                 # Embed the generated word to serve as the input of the next LSTM step
-                x = self.DecoderRNN.embed(predicted).unsqueeze(0)  # Shape: [1, 1, embed_size]
+                x = self.DecoderRNN.embed(predicted).unsqueeze(0) 
 
         # Convert the list of generated word indices to a list of words
         return [vocabulary.itos[idx] for idx in result_caption]
-
-
