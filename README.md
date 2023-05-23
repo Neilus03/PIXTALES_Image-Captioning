@@ -35,6 +35,10 @@ Our evaluation focuses on two areas: the BLEU score and a visual inspection of t
 
 This project is an exciting journey into the intersection of computer vision and natural language processing. We hope that this project can serve as a helpful resource for those interested in image captioning, deep learning, and AI in general.
 
+## References
+[CS 152 NN—25: Attention: Image Captioning by Neil Rhodes](https://youtu.be/JTXPrjvhLl8)
+
+
 ## Contributors
 Write here the name and UAB mail of the group members
 
