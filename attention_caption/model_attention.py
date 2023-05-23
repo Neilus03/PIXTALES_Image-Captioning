@@ -4,35 +4,52 @@ import torch.nn as nn
 import torchvision.models as models
 
 
+# Encoder part of the model using a pre-trained VGG16
 class EncoderCNN(nn.Module):
     def __init__(self):
         super(EncoderCNN, self).__init__()
         vgg16 = models.vgg16(pretrained=True)
-        features = list(vgg16.features.children())[:-1]  # remove the last max pooling layer
+        
+        # Remove the last max pooling layer from VGG16
+        features = list(vgg16.features.children())[:-1]
         self.features = nn.Sequential(*features)
 
     def forward(self, images):
+        
+        # Pass images through convolutional layers
         features = self.features(images)  # Shape: [batch_size, 512, 14, 14]
+        
+        # Permute the tensor dimensions
         features = features.permute(0, 2, 3, 1)  # Shape: [batch_size, 14, 14, 512]
+        
+        # Flatten the tensor
         features = features.view(features.size(0), -1, features.size(-1))  # Shape: [batch_size, 196, 512]
+        
         return features
 
-class Attention(nn.Module):
-    def __init__(self, encoder_dim, decoder_dim):
-        super(Attention, self).__init__()
-        self.attention = nn.Linear(encoder_dim + decoder_dim, decoder_dim)
-        self.v = nn.Linear(decoder_dim, 1, bias=False)
+# Dot-Product Attention
+class DotProductAttention(nn.Module):
+    def __init__(self):
+        super(DotProductAttention, self).__init__()
 
-    def forward(self, features, hidden):
-        attention = self.attention(torch.cat([hidden, features], dim=1))
-        v = self.v(torch.tanh(attention))
-        alpha = torch.softmax(v, dim=1)
+    def forward(self, encoder_outputs, decoder_hidden):
+        
+        # Perform a batch matrix multiplication with encoder_outputs and decoder_hidden
+        # Shape of attention_scores: [batch_size, num_pixels, 1]
+        attention_scores = torch.bmm(encoder_outputs, decoder_hidden.unsqueeze(2)).squeeze(2)
+        
+        # Apply softmax to compute attention weights
+        # Shape of attention_weights: [batch_size, num_pixels]
+        attention_weights = torch.softmax(attention_scores, dim=1)
+        
+        # Compute context vector as the weighted sum of the encoder_outputs
+        # Shape of context_vector: [batch_size, encoder_dim]
+        context_vector = torch.sum(encoder_outputs * attention_weights.unsqueeze(2), dim=1)
+        
+        return context_vector, attention_weights
 
-        attention_weighted_encoding = torch.sum(alpha * features, dim=1)
 
-        return attention_weighted_encoding, alpha
-
-
+# Decoder part of the model
 class DecoderRNN(nn.Module):
     def __init__(self, embed_size, hidden_size, vocab_size, num_layers):
         super(DecoderRNN, self).__init__()
@@ -42,66 +59,83 @@ class DecoderRNN(nn.Module):
         self.hidden_size = hidden_size
         self.vocab_size = vocab_size
 
-        # Embedding layer
+        # Word embedding layer
         self.embed = nn.Embedding(vocab_size, embed_size)
 
         # Attention layer
-        self.attention = Attention(embed_size, hidden_size)
+        self.attention = DotProductAttention()
 
         # LSTM layer
-        self.lstm = nn.LSTM(embed_size * 2, hidden_size, num_layers)  # * 2 because we concatenate attention weighted encoding
+        self.lstm = nn.LSTM(embed_size, hidden_size, num_layers, batch_first=True)
 
-        # Linear layer
+        # Linear layer mapping from hidden dimension to vocab size
         self.linear = nn.Linear(hidden_size, vocab_size)
 
     def forward(self, features, captions):
-        embeddings = self.embed(captions)
-        embeddings = torch.cat((features.unsqueeze(1), embeddings), dim=1)
-        attention_weighted_encoding, alpha = self.attention(features, embeddings[:, -1, :])
-        hiddens, _ = self.lstm(embeddings)
-        outputs = self.linear(hiddens)
+        # Get the word embeddings of the captions
+        embeddings = self.embed(captions)  # Shape: [batch_size, caption_length, embed_size]
+        # Compute the attention weights and apply to encoder features
+        context_vector, attention_weights = self.attention(features, embeddings)
+        # Concatenate the context vector with the word embeddings
+        # Shape: [batch_size, caption_length, hidden_size]
+        embeddings = torch.cat((context_vector.unsqueeze(1), embeddings), dim=2)
+        # Pass embeddings to LSTM
+        hiddens, _ = self.lstm(embeddings)  # Shape: [batch_size, caption_length, hidden_size]
+        # Pass LSTM outputs through linear layer to get scores for each word in the vocabulary
+        outputs = self.linear(hiddens)  # Shape: [batch_size, caption_length, vocab_size]
+        return outputs, attention_weights
 
-        return outputs, alpha
-
-
+# Full model combining the encoder and the decoder
+# Full model combining the Encoder (CNN) and the Decoder (RNN with attention)
 class CNNtoRNN(nn.Module):
     def __init__(self, embed_size, hidden_size, vocab_size, num_layers):
         super(CNNtoRNN, self).__init__()
 
-        # Instantiate the EncoderCNN module
+        # Encoder: Convolutional Neural Network (CNN) using a pre-trained VGG16 model
         self.EncoderCNN = EncoderCNN()
 
-        # Instantiate the DecoderRNN module
+        # Decoder: Recurrent Neural Network (RNN) with a dot-product attention mechanism
         self.DecoderRNN = DecoderRNN(embed_size, hidden_size, vocab_size, num_layers)
 
     def forward(self, images, captions):
-        features = self.EncoderCNN(images)
-        outputs = self.DecoderRNN(features, captions)
-        return outputs
+        # Extract high-level visual features from input images using the encoder
+        features = self.EncoderCNN(images)  # Shape: [batch_size, 196, 512]
 
+        # Generate a sequence of words (caption) from the image features using the decoder
+        outputs = self.DecoderRNN(features, captions)  # Shape: [batch_size, caption_length, vocab_size]
+        return outputs
 
     def caption_image(self, image, vocabulary, max_length=50):
         result_caption = []
-        alpha_list = []
 
+        # Switch off gradients computation because we are in inference mode
         with torch.no_grad():
-            x = self.EncoderCNN(image).unsqueeze(0)
+            # Extract image features using the encoder
+            x = self.EncoderCNN(image).unsqueeze(0)  # Shape: [1, 196, 512]
+
+            # LSTM states initialization
             states = None
 
+            # Generate a caption for the image up to the max_length or until <EOS> token is found
             for _ in range(max_length):
-                h, alpha = self.DecoderRNN.lstm(x, states)
-                output = self.DecoderRNN.linear(h.squeze(0))
+                # LSTM forward step
+                h, _ = self.DecoderRNN.lstm(x, states)
+                # Map LSTM hidden state output to the vocabulary size to get word scores
+                output = self.DecoderRNN.linear(h.squeeze(0))  # Shape: [1, vocab_size]
+                # Pick the word with the highest score as the next word of the generated caption
                 _, predicted = output.max(1)
+                # Store the generated word to the result caption
                 result_caption.append(predicted.item())
-                alpha_list.append(alpha)
 
+                # If the generated word is <EOS>, stop generation
                 if vocabulary.itos[predicted.item()] == "<EOS>":
                     break
 
-                x = self.DecoderRNN.embed(predicted).unsqueeze(0)
+                # Embed the generated word to serve as the input of the next LSTM step
+                x = self.DecoderRNN.embed(predicted).unsqueeze(0)  # Shape: [1, 1, embed_size]
 
-        return [vocabulary.itos[idx] for idx in result_caption], alpha_list
-
+        # Convert the list of generated word indices to a list of words
+        return [vocabulary.itos[idx] for idx in result_caption]
 
 
 
