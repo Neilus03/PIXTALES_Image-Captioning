@@ -115,7 +115,7 @@ class Padding:
         # Extract the caption tensors from the batch
         targets = [item[1] for item in batch]
         # Pad the caption tensors along the sequence dimension (dimension 0) using the <PAD> token
-        targets = pad_sequence(targets, batch_first = False, padding_value = self.pad_idx)
+        targets = pad_sequence(targets, batch_first = True, padding_value = self.pad_idx)
         
         # Return the batch of image tensors and the padded caption tensors
         return imgs, targets
