@@ -139,9 +139,9 @@ def main():
     ])
 
     # Specify the paths to the trained model checkpoint and evaluation dataset
-    model_checkpoint_path = "/home/xnmaster/PIXTALES-2/checkpoint8.pth"
-    images_path = "/home/xnmaster/PIXTALES-2/Images/"
-    annotations_path = "/home/xnmaster/PIXTALES-2/captions.txt"
+    model_checkpoint_path = "/home/xnmaster/PIXTALES-2/checkpoint8.pth" #change it maiol, dani
+    images_path = "/home/xnmaster/PIXTALES-2/Images/" #change it maiol, dani
+    annotations_path = "/home/xnmaster/PIXTALES-2/captions.txt" #change it maiol, dani
 
     # Set CUDA benchmark for improved performance
     torch.backends.cudnn.benchmark = True
