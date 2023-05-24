@@ -9,7 +9,7 @@ import base64
 from PIL import Image
 from io import BytesIO
 
-from utils import save_checkpoint, load_checkpoint, print_and_export_examples
+from utils import save_checkpoint, load_checkpoint
 from get_loader import get_loader
 from model import CNNtoRNN
 
