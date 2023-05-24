@@ -69,7 +69,7 @@ class Vocabulary:
 
 # Define the custom Dataset class
 class FlickrDataset(Dataset):
-    def __init__(self, root_dir, captions_file, transform=None, freq_threshold=5):
+    def __init__(self, root_dir, captions_file, transform=None, freq_threshold=3):
         self.root_dir = root_dir  # Base directory for images
         self.df = pd.read_csv(captions_file)  # Load the captions file into a dataframe
         self.transform = transform  # Transformations to apply to images
@@ -149,7 +149,7 @@ def get_loader(root_folder,
     # Return both the DataLoader and the dataset
     return loader, dataset
 
-# The main function is the entry point of the script
+# The main function is the entry point of the script (is not used, just for testing)
 def main():
     # Define the transform to be applied to the images
     transform = transforms.Compose(
@@ -178,4 +178,3 @@ def main():
         # Print the shape of the image and caption tensors for each batch
         print(imgs.shape)
         print(captions.shape)
-
