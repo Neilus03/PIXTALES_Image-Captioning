@@ -4,9 +4,8 @@ import torch.optim as optim
 import torchvision.transforms as transforms
 import matplotlib.pyplot as plt
 from torch.utils.tensorboard import SummaryWriter
-from datetime import datetime
 
-from utils import save_checkpoint, load_checkpoint, print_and_export_examples
+from utils import save_checkpoint, load_checkpoint
 from get_loader import get_loader
 from model import CNNtoRNN
 
@@ -47,7 +46,7 @@ def train():
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
     # Set flags for loading and saving models
-    load_model = True
+    load_model = False
     save_model = True
 
     # Hyperparameters
@@ -55,8 +54,8 @@ def train():
     hidden_size = 256  # Number of units in the hidden state of the RNN
     vocab_size = len(dataset.vocab)  # Size of the vocabulary
     learning_rate = 3e-4  # Learning rate for the optimizer
-    num_epochs = 20  # Number of training epochs
-    num_layers = 1  # Number of layers in the RNN
+    num_epochs = 10  # Number of training epochs
+    num_layers = 4  # Number of layers in the RNN
 
     # Create a SummaryWriter for TensorBoard visualization
     writer = SummaryWriter("runs/flickr")
@@ -69,7 +68,7 @@ def train():
 
     if load_model:
         # Load the saved checkpoint
-        step = load_checkpoint(torch.load("./checkpoint11.pth"), model, optimizer)
+        step = load_checkpoint(torch.load("checkpoint.pth.tar"), model, optimizer)
 
     # Set the model to training mode
     model.train()
@@ -77,7 +76,7 @@ def train():
     # Initialize a list to store the training loss values
     train_loss_values = []
     
-
+    from datetime import datetime
     print_every = 50  # Change this to control how often you want to print
     
     for epoch in range(num_epochs):
@@ -108,7 +107,7 @@ def train():
         epoch_loss = total_loss / len(train_loader)
         train_loss_values.append(epoch_loss)
         print(f"End of Epoch [{epoch+1}/{num_epochs}], Loss: {epoch_loss:.4f}")
-        
+    
         if save_model:
             # Save the final model checkpoint
             checkpoint = {
@@ -116,22 +115,16 @@ def train():
                 "optimizer": optimizer.state_dict(),
                 "step": step,
             }
-            save_checkpoint(checkpoint, "checkpoint"+str(epoch+1)+".pth")
-
-        # Plot the training loss curve
-        plt.plot(range(1, num_epochs+1), train_loss_values)
-        plt.xlabel("Epochs")
-        plt.ylabel("Loss")
-        plt.title(f"Training Loss Curve in epoch {epoch + 1}")
-        plt.show()
+            save_checkpoint(checkpoint, "checkpoint"+str{epoch + 1}+".pth")
+        
 
     # Plot the training loss curve
     plt.plot(range(1, num_epochs+1), train_loss_values)
     plt.xlabel("Epochs")
     plt.ylabel("Loss")
-    plt.title("Training Loss Curve after training")
+    plt.title("Training Loss Curve")
     plt.show()
-    
+
     if save_model:
         # Save the final model checkpoint
         checkpoint = {
@@ -141,9 +134,6 @@ def train():
         }
         save_checkpoint(checkpoint, "final_checkpoint.pth")
     
-    # Print and export examples after training
-    #print_and_export_examples(model, device, dataset, num_examples=5, export_file="examples.txt")
-
+    
 if __name__ == "__main__":
     train()
-
