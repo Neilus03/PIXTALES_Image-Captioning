@@ -1,4 +1,3 @@
-
 import torch
 import torch.nn as nn
 import torchvision.models as models
@@ -13,20 +12,20 @@ class EncoderCNN(nn.Module):
         features = list(vgg16.features.children())[:-1]
         self.features = nn.Sequential(*features)
 
-    def forward(self, images): 
+    def forward(self, images):
         # Pass images through convolutional layers
         features = self.features(images)
 
         # Debug print
-        print("Shape of features after EncoderCNN: ", features.shape) # [32, 512, 14, 14]
+        #print("Shape of features after EncoderCNN: ", features.shape) # [32, 512, 14, 14]
 
         # Permute the tensor dimensions
         features = features.permute(0, 2, 3, 1)
-        print("Shape of features after permuting: ", features.shape) # [32, 14, 14, 512]
+        #print("Shape of features after permuting: ", features.shape) # [32, 14, 14, 512]
 
         # Flatten the tensor
         features = features.view(features.size(0), -1, features.size(-1))
-        print('features after applying view to flatten:', features.shape) # [32, 196, 512]
+        #print('features after applying view to flatten:', features.shape) # [32, 196, 512]
         return features
 
 # Dot-Product Attention
@@ -38,14 +37,14 @@ class DotProductAttention(nn.Module):
         
         # Debug prints   
         print("Shape of encoder_outputs: ", encoder_outputs.shape) # [32, 196, 512]
-        print("Shape of decoder_hidden before unsqueeze: ", decoder_hidden.shape) # [1, 512]
+        print("Shape of decoder_hidden before unsqueeze: ", decoder_hidden.shape) # [32, 256]
 
         # Perform a batch matrix multiplication with encoder_outputs and decoder_hidden
         # Shape of attention_scores: [batch_size, num_pixels, 1]
         
-        print('Shape of decoder_hidden after unsqueeze(2).shape:', decoder_hidden.unsqueeze(2).shape) # [1, 512, 1]
+        print('Shape of decoder_hidden after unsqueeze(2).shape:', decoder_hidden.unsqueeze(2).shape) # [32, 256, 1]
 
-        attention_scores = torch.bmm(encoder_outputs, decoder_hidden.unsqueeze(2)).squeeze(2)
+        attention_scores = torch.bmm(encoder_outputs, decoder_hidden.unsqueeze(2)).squeeze(2) # Expected output shape [196, 512]
 
         # Debug print
         print("Shape of attention_scores: ", attention_scores.shape)
@@ -69,6 +68,7 @@ class DecoderRNN(nn.Module):
         self.embed_size = embed_size
         self.hidden_size = hidden_size
         self.vocab_size = vocab_size
+        self.num_layers = num_layers
 
         # Word embedding layer
         self.embed = nn.Embedding(vocab_size, embed_size) # from 2994 to 256
@@ -85,37 +85,42 @@ class DecoderRNN(nn.Module):
     def forward(self, features, captions):
         # Get the word embeddings of the captions
         embeddings = self.embed(captions) 
-        print('Features shape: ', features.shape)
+        print('Features shape in decoder fordward: ', features.shape) # [32. 192, 512]
         # Initialize LSTM hidden state
         print("Embeddings shape at every pos:", embeddings.shape) # [32, 25, 256]
-        print("features after applying .size(-1):",features.size(-1))
-        h, c = torch.zeros(embeddings.shape[0], 32, features.size(-1)).to(embeddings.device), \
-               torch.zeros(embeddings.shape[0], 32, features.size(-1)).to(embeddings.device)
+ 
+        h = torch.zeros(self.num_layers, embeddings.shape[0], features.shape[2]).to(embeddings.device) # shape of h [1, 32, 512]
+        c = torch.zeros(self.num_layers, embeddings.shape[0], features.shape[2]).to(embeddings.device) # shape of c [1, 32, 512]
         
         # Store the outputs here
         outputs = torch.empty((embeddings.shape[0], captions.shape[1], self.vocab_size)).to(embeddings.device)
-        print("outputs shape:", outputs.shape) 
+        #print("outputs shape:", outputs.shape) 
         # Iterating through each timestep in the captions' length
-        print("captions shape", captions.shape)
+        #print("captions shape", captions.shape)
         for t in range(captions.shape[1]):
             # Compute the attention weights and apply to encoder features
             context_vector, _ = self.attention(features, h[-1])
 
-            print("context_vector shape: ",context_vector.shape)
-            print("context_vector.unsqueeze(1) shape: ",context_vector.unsqueeze(1).shape)
+            #print("context_vector shape: ",context_vector.shape)
+            #print("context_vector.unsqueeze(1) shape: ",context_vector.unsqueeze(1).shape)
             
-            print("embeddings[:, t] shape:", embeddings[:, t].shape)
-            print("embeddings[:, t].unsqueeze(1) shape:", embeddings[:, t].unsqueeze(1).shape)
+            #print("embeddings[:, t] shape:", embeddings[:, t].shape)
+            #print("embeddings[:, t].unsqueeze(1) shape:", embeddings[:, t].unsqueeze(1).shape)
             # Concatenate the context vector with the current word embedding
             input_lstm = torch.cat((context_vector.unsqueeze(1), embeddings[:, t].unsqueeze(1)), dim=2)
             # Pass embeddings to LSTM
-            print("shape of h:",h.shape)  
-            print("shape of c:",c.shape)
-            print("input_lstm shape:", input_lstm.shape)
-            h, c = self.lstm(input_lstm, (h, c))
+            print("shape of h:",h.shape)  # [32, 32, 512]
+            print("shape of c:",c.shape)  # [32, 32, 512]
+            print("input_lstm shape:", input_lstm.shape) # [32, 1, 768]
+
+            h, c = self.lstm(input_lstm.squeeze(1), (h.squeeze(1), c.squeeze(1))) # [32, 768], [32, 512], [32, 512]
             
+            #print('h shape:', h.shape)
+            #print('h with squeeze(1)', h.squeeze(1).shape)
+
             # Pass LSTM output through linear layer to get scores for each word in the vocabulary
             output = self.linear(h.squeeze(1)) 
+
             # Store the output
             outputs[:, t, :] = output
 
