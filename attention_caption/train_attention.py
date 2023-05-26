@@ -10,17 +10,7 @@ from datetime import datetime
 
 
 def train():
-    # Define the image transformations
-    transform = transforms.Compose(
-        [
-            transforms.Resize((356, 356)),  # Resize the image to a specific size
-            transforms.RandomCrop((299, 299)),  # Randomly crop the image
-            transforms.ToTensor(),  # Convert the image to a tensor
-            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),  # Normalize the image tensor
-        ]
-    )
-
-
+ 
     images_path = input("Enter the images path (or press Enter to use the default path): ")
     annotations_path = input("Enter the annotations path (or press Enter to use the default path): ")
 
@@ -49,12 +39,12 @@ def train():
     save_model = True
 
     # Hyperparameters
-    embed_size = 256  # Dimensionality of the word embedding
-    hidden_size = 256  # Number of units in the hidden state of the RNN
+    embed_size = 512  # Dimensionality of the word embedding
+    hidden_size = 512  # Number of units in the hidden state of the RNN
     vocab_size = len(dataset.vocab)  # Size of the vocabulary
     learning_rate = 3e-4  # Learning rate for the optimizer
     num_epochs = 20  # Number of training epochs
-    num_layers = 1  # Number of layers in the RNN
+    num_layers = 4  # Number of layers in the RNN
 
     # Create a SummaryWriter for TensorBoard visualization
     writer = SummaryWriter("runs/flickr")
@@ -74,39 +64,53 @@ def train():
 
     # Initialize a list to store the training loss values
     train_loss_values = []
-    
+
     print_every = 50  # Change this to control how often you want to print
-    
+
+    # Initialize a list to store the training loss values
+    train_loss_values = []
+
+    print_every = 50  # Change this to control how often you want to print
     print('starting training ...')
     for epoch in range(num_epochs):
         total_loss = 0.0  # Variable to track the total loss for the epoch
         start_time = datetime.now()  # Start timing
-        
+
         for idx, (imgs, captions) in enumerate(train_loader):
             imgs = imgs.to(device)
             captions = captions.to(device)
             # Forward pass through the model
-            outputs = model(imgs, captions[:]) #originally  outputs = model(imgs, captions[:-1]) bcs we wanted to predict the EOS token
-            loss = criterion(outputs.reshape(-1, outputs.shape[2]), captions.reshape(-1))
-            
+            outputs = model(imgs, captions) #originally  outputs = model(imgs, captions[:-1]) bcs we wanted to predict the EOS token
+
+            #print('outputs before reshape:', outputs.shape)
+            #print('captions before reshape:',captions.shape)
+
+            outputs = outputs.reshape(-1, outputs.shape[-1])  # Reshape the output to [batch_size * sequence_length, vocabulary_size]
+            captions = captions[:, 1:].reshape(-1)  # Reshape the captions to [batch_size * sequence_length - 1]
+
+            #print('outputs after reshape:', outputs.shape) 
+            #print('captions after reshape:', captions.shape) 
+
+            loss = criterion(outputs, captions)
+
             #Log the training loss in TensorBoard 
             writer.add_scalar("Training loss", loss.item(), global_step=step)
             step += 1
-            
+
             optimizer.zero_grad()  # Zero the gradients
             loss.backward()  # Perform backward pass to calculate gradients
             optimizer.step()  # Update the weights using the gradients
-            
+
             total_loss += loss.item()
-            
+
             if (idx + 1) % print_every == 0:
                 print(f'Epoch [{epoch+1}/{num_epochs}], Step [{idx+1}/{len(train_loader)}], Loss: {loss.item()}, Time: {datetime.now() - start_time}')
                 start_time = datetime.now()  # Reset timing
-                
+
         epoch_loss = total_loss / len(train_loader)
         train_loss_values.append(epoch_loss)
         print(f"End of Epoch [{epoch+1}/{num_epochs}], Loss: {epoch_loss:.4f}")
-        
+
         if save_model:
             # Save the final model checkpoint
             checkpoint = {
@@ -122,7 +126,7 @@ def train():
     plt.ylabel("Loss")
     plt.title("Training Loss Curve after training")
     plt.show()
-    
+
     if save_model:
         # Save the final model checkpoint
         checkpoint = {
