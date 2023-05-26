@@ -4,7 +4,8 @@
 # Set up padding of every batch (all examples need to have same seqlen)
 # Set up DataLoader
 
-# Import necessary libraries
+# @title get_loader.py
+
 import os               # For operating system related operations like path management
 import pandas as pd     # For handling dataframes
 import torch            # The main PyTorch library
@@ -86,7 +87,7 @@ class FlickrDataset(Dataset):
         return len(self.df)  # Return the total number of items in the dataset
 
     def __getitem__(self, id):
-        caption = self.captions[id]  # Get the caption corresponding to the id (I think there might be an error bc there are 5 cations for the same id)
+        caption = self.captions[id]  # Get the caption corresponding to the id
         img_id = self.imgs[id]  # Get the image id corresponding to the id
         img = Image.open(os.path.join(self.root_dir, img_id)).convert("RGB")  # Open and convert the image
 
@@ -99,7 +100,7 @@ class FlickrDataset(Dataset):
         numerical_caption.append(self.vocab.stoi["<EOS>"])
 
         return img, torch.tensor(numerical_caption)  # Return the image and its corresponding numericalized caption 
-    												 # (numericalized captions = [1,stoi(W1),...,stoi(Wn),2])
+    												 # (numericalized captions = tensor([1,stoi(W1),...,stoi(Wn),2]))
     
 # Padding class is used to pad the captions to the same length for each batch
 class Padding:
@@ -130,7 +131,7 @@ def get_loader(root_folder,
                pin_memory=True,
                ):
     
-    #define the transform to be applied, I choose 224 by 224 bc is the size of the images in Show attend and tell paper which I was inspired on
+    #define the transform to be applied, I choose 224 by 224 bc is the size of the input images in Show attend and tell paper which I was inspired on
     transform = transforms.Compose(
 		[
 			#resize to 224x224
@@ -158,33 +159,3 @@ def get_loader(root_folder,
 
     # Return both the DataLoader and the dataset
     return loader, dataset
-
-# The main function is the entry point of the script
-def main():
-    # Define the transform to be applied to the images
-    transform = transforms.Compose(
-        [
-            # Resize the images to 224x224
-            transforms.Resize((224, 224)),
-            # Convert the images to PyTorch tensors
-            transforms.ToTensor(),
-        ]
-    )
-
-    # Create a DataLoader for the dataset located at the specified path
-    images_path = input("Enter the images path (or press Enter to use the default path): ")
-    annotations_path = input("Enter the annotations path (or press Enter to use the default path): ")
-
-    if not images_path:
-        images_path = "/Users/nde-la-f/Documents/Image_caption/flickr8k/images/"
-
-    if not annotations_path:
-        annotations_path = "/Users/nde-la-f/Documents/Image_caption/flickr8k/captions.txt"
-
-    dataloader = get_loader(images_path, annotation_file=annotations_path, transform=transform)
-
-    # Iterate over the DataLoader
-    for idx, (imgs, captions) in enumerate(dataloader):
-        # Print the shape of the image and caption tensors for each batch
-        print(imgs.shape)
-        print(captions.shape)
