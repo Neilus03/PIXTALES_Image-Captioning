@@ -139,9 +139,9 @@ def main():
     ])
 
     # Specify the paths to the trained model checkpoint and evaluation dataset
-    model_checkpoint_path = "/home/xnmaster/PIXTALES-2/checkpoint8.pth"
-    images_path = "/home/xnmaster/PIXTALES-2/Images/"
-    annotations_path = "/home/xnmaster/PIXTALES-2/captions.txt"
+    model_checkpoint_path = "/home/xnmaster/PIXTALES_Image-Captioning-4/final_checkpoint.pth"
+    images_path = "/home/xnmaster/PIXTALES_Image-Captioning-4/8k_Images"
+    annotations_path = "/home/xnmaster/PIXTALES_Image-Captioning-4/train_captions8k.txt"
 
     # Set CUDA benchmark for improved performance
     torch.backends.cudnn.benchmark = True
@@ -165,7 +165,7 @@ def main():
     embed_size = 256
     hidden_size = 256
     vocab_size = len(eval_dataset.vocab)
-    num_layers = 1
+    num_layers = 2
 
     # Create the model and load the checkpoint parameters
     model = CNNtoRNN(embed_size, hidden_size, vocab_size, num_layers)
