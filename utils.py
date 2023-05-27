@@ -14,6 +14,7 @@ def load_checkpoint(checkpoint, model, optimizer):
     
     model.load_state_dict(checkpoint['state_dict'])
     optimizer.load_state_dict(checkpoint['optimizer'])
+    scheduler.load_state_dict(checkpoint['scheduler'])
     step = checkpoint['step']
     print("Checkpoint loaded!") #Just for verbosity
     return step
