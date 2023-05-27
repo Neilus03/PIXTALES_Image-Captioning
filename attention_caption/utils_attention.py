@@ -1,3 +1,4 @@
+
 import torch
 import torch.nn.functional as F
 import numpy as np
@@ -7,7 +8,7 @@ def save_checkpoint(state, filename="checkpoint.pth"):
     #save the checkpoint in the file passed by parameter
     
     torch.save(state, filename)
-    print("Checkpoint saved!") #Just for verbosity
+    print("Checkpoint saved!")
 
 
 def load_checkpoint(checkpoint, model, optimizer):
@@ -15,6 +16,9 @@ def load_checkpoint(checkpoint, model, optimizer):
     
     model.load_state_dict(checkpoint['state_dict'])
     optimizer.load_state_dict(checkpoint['optimizer'])
+    scheduler.load_state_dict(checkpoint['scheduler'])
+    
     step = checkpoint['step']
-    print("Checkpoint loaded!") #Just for verbosity
+    
+    print("Checkpoint loaded!")
     return step
