@@ -9,7 +9,7 @@ class EncoderCNN(nn.Module):
         
         vgg16 = models.vgg16(pretrained=True)
         
-        # Remove the last max pooling layer from VGG16
+        # Remove the last max pooling layer from VGG16 to get the feature map of shape [14x14x512]
         features = list(vgg16.features.children())[:-1]
         self.features = nn.Sequential(*features)
 
@@ -17,16 +17,12 @@ class EncoderCNN(nn.Module):
         # Pass images through convolutional layers
         features = self.features(images)
 
-        # Debug print
-        #print("Shape of features after EncoderCNN: ", features.shape) # [32, 512, 14, 14]
-
         # Permute the tensor dimensions
         features = features.permute(0, 2, 3, 1)
-        #print("Shape of features after permuting: ", features.shape) # [32, 14, 14, 512]
-
+        
         # Flatten the tensor
         features = features.view(features.size(0), -1, features.size(-1))
-        #print('features after applying view to flatten:', features.shape) # [32, 196, 512]
+        
         return features
 
 # Disclaimer: We decided to call pixels to the patches that are outputted by the cnn, Lets say if the outputed feature map is 14x14 we'll say that we now have 196 pixels, 
