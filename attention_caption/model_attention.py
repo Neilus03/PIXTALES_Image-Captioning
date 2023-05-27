@@ -77,25 +77,24 @@ class DecoderRNN(nn.Module):
         # Attention layer is used to compute the attention weights and the context vector from encoder features and the previous hidden state of the LSTM
         # Here, we are assuming that the size of the encoder features is equal to the hidden state size of the LSTM for simplicity (both 512)
         self.attention = AdditiveAttention(hidden_size, hidden_size) # Using hidden_size as feature_map_depth for simplicity as both have the same value (512)
-
+     
+    
     def forward(self, features, captions):
         # Compute the word embeddings of the captions
         embeddings = self.embed(captions[:, :-1])  # (batch_size, caption_length - 1, embed_size)
-        #print("Shape of embeddings:", embeddings.shape)
 
+        
         # Compute the attention weights
         att_weights = self.attention(features, features.mean(dim=1))  # We use the mean features as the initial hidden state
 
         # Compute the context vector
         context_vector = torch.sum(features * att_weights.unsqueeze(2), dim=1)  # (batch_size, hidden_size)
-        #print("Shape of context_vector:", context_vector.shape)
 
-
-        # Concatenate the context vector with the word embeddings
+        #repeat the context_vector to match the 3d dimension of embeddings
         context_vector_repeated = context_vector.unsqueeze(1).repeat(1, embeddings.size(1), 1)
-        #print("shape of context_vetor_repeated:", context_vector_repeated.shape)
+        
+        # Concatenate the context vector with the word embeddings
         lstm_input = torch.cat((context_vector_repeated, embeddings), dim=2)
-        #print("Shape of lstm_input:", lstm_input.shape)
 
         # Pass the concatenated input through the LSTM
         lstm_out, _ = self.lstm(lstm_input)
