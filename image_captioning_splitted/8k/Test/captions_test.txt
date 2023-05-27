@@ -1,3 +1,4 @@
+image,caption
 3285298241_9b1ed98d19.jpg,A basketball player in a blue jersey holds the ball high .
 3285298241_9b1ed98d19.jpg,A basketball player is getting ready to shoot a hoop
 3285298241_9b1ed98d19.jpg,A man in blue uniform about to throw a basketball .
