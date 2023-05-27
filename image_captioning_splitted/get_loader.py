@@ -54,17 +54,20 @@ class FlickrDataset(Dataset):
     def __init__(self, root_dir, captions_file, transform=None, freq_threshold=3, dataset='flickr30k'):
         self.root_dir = root_dir
         self.transform = transform
-
-        if dataset == 'flickr8k':
+        self.dataset = dataset
+        
+        if self.dataset == 'COCO':
             self.df = pd.read_csv(captions_file)
             self.df = self.df.dropna()
-
-        elif dataset == 'flickr30k':
+            self.imgs = self.df['image_id']
+            self.captions = self.df['caption']
+            
+        elif dataset == 'flickr8k' or dataset == 'flickr30k':
             self.df = pd.read_csv(captions_file)
             self.df = self.df.dropna()
-
-        self.imgs = self.df['image']
-        self.captions = self.df['caption']
+            self.imgs = self.df['image']
+            self.captions = self.df['caption']
+        
         self.vocab = Vocabulary(freq_threshold)
         self.vocab.build_vocabulary(self.captions.tolist())
 
