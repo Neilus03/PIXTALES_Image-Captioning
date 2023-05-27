@@ -252,8 +252,8 @@ def main():
     checkpoint = torch.load(model_checkpoint_path)
 
     # Get the model parameters from the checkpoint
-    embed_size = 256
-    hidden_size = 256
+    embed_size = 512
+    hidden_size = 512
     vocab_size = len(eval_dataset.vocab)
     num_layers = 1
 
