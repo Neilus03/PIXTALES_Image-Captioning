@@ -65,7 +65,8 @@ def train():
     model = CNNtoRNN(embed_size, hidden_size, vocab_size, num_layers).to(device)
     criterion = nn.CrossEntropyLoss(ignore_index=dataset.vocab.stoi["<PAD>"])  # Ignore padding tokens in the loss calculation
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
-
+    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size = 3, gamma = 0.9)
+    
     if load_model:
         # Load the saved checkpoint
         step = load_checkpoint(torch.load("checkpoint.pth.tar"), model, optimizer)
@@ -113,6 +114,7 @@ def train():
             checkpoint = {
                 "state_dict": model.state_dict(),
                 "optimizer": optimizer.state_dict(),
+                "scheduler": scheduler.state_dict(),
                 "step": step,
             }
             save_checkpoint(checkpoint, "checkpoint"+str{epoch + 1}+".pth")
@@ -130,6 +132,7 @@ def train():
         checkpoint = {
             "state_dict": model.state_dict(),
             "optimizer": optimizer.state_dict(),
+            "scheduler": scheduler.state_dict(),
             "step": step,
         }
         save_checkpoint(checkpoint, "final_checkpoint.pth")
