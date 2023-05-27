@@ -81,7 +81,7 @@ class DecoderRNN(nn.Module):
     
     def forward(self, features, captions):
         # Compute the word embeddings of the captions
-        embeddings = self.embed(captions[:, :-1])  # (batch_size, caption_length - 1, embed_size)
+        embeddings = self.embed(captions)  # (batch_size, caption_length, embed_size)
 
         
         # Compute the attention weights
