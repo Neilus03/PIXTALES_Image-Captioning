@@ -4,8 +4,6 @@
 # Set up padding of every batch (all examples need to have same seqlen)
 # Set up DataLoader
 
-# @title get_loader.py
-
 import os               # For operating system related operations like path management
 import pandas as pd     # For handling dataframes
 import torch            # The main PyTorch library
@@ -14,7 +12,6 @@ from torch.nn.utils.rnn import pad_sequence  # For padding sequences to the same
 from torch.utils.data import DataLoader, Dataset  # For handling the dataset
 from PIL import Image   # For handling image data
 from torchvision import transforms # For resize of the images
-from spacy import *
 
 spacy_en = spacy.load("en_core_web_sm") # Load the English language model for SpaCy
 
@@ -100,7 +97,7 @@ class FlickrDataset(Dataset):
         numerical_caption.append(self.vocab.stoi["<EOS>"])
 
         return img, torch.tensor(numerical_caption)  # Return the image and its corresponding numericalized caption 
-    												 # (numericalized captions = tensor([1,stoi(W1),...,stoi(Wn),2]))
+    						     # (numericalized captions = tensor([1,stoi(W1),...,stoi(Wn),2]))
     
 # Padding class is used to pad the captions to the same length for each batch
 class Padding:
