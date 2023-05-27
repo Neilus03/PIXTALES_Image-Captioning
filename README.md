@@ -8,17 +8,16 @@ PIXTALES is a project that uses a combination of Convolutional Neural Networks (
 
 ## Getting Started
 
-First, you need to set up your local environment. We use conda for managing dependencies. After cloning this repository, create a new conda environment using the provided environment.yml file:
+First, you need to set clone this repository in your local (or virtual) machine
 
 ```
-conda env create --file environment.yml
-conda activate xnap-example
+git clone git@github.com:Neilus03/PIXTALES_Image-Captioning.git
 ```
 
 Next, to run the example code, simply use:
 
 ```
-python main.py
+python train.py
 ```
 
 ## Code Structure
