@@ -40,9 +40,9 @@ def train():
     embed_size = 512  # Dimensionality of the embeddings
     hidden_size = 512  # Size of the hidden layer in the RNN
     vocab_size = len(dataset.vocab)  # Size of the vocabulary
-    learning_rate = 3e-4  # Learning rate for the optimizer
+    learning_rate = 5e-4  # Learning rate for the optimizer
     num_epochs = 20  # Number of epochs for training
-    num_layers = 4  # Number of layers in the RNN
+    num_layers = 2 # Number of layers in the RNN
 
     # Initialize TensorBoard writer for logging purposes
     writer = SummaryWriter("runs/flickr")
@@ -86,8 +86,8 @@ def train():
             outputs = model(imgs, captions)
 
             # Reshape the outputs and captions for loss computation
-            outputs = outputs.reshape(-1, outputs.shape[-1])  
-            captions = captions[:, 1:].reshape(-1)  
+            outputs = outputs.reshape(-1, outputs.shape[-1])  #reshape the output to be [batch_size * squence_length, vocabulary_size]
+            captions = captions.reshape(-1)  #Resize the captions to be [batch_size * sequence_length]
 
             # Calculate loss
             loss = criterion(outputs, captions)
@@ -102,8 +102,7 @@ def train():
 
             # Update the weights using the calculated gradients
             optimizer.step()  
-            
-            
+          
             
             total_loss += loss.item()
 
@@ -116,7 +115,7 @@ def train():
         train_loss_values.append(epoch_loss)
         print(f"End of Epoch [{epoch+1}/{num_epochs}], Loss: {epoch_loss:.4f}")
         
-        # Update the learning rate (now disabled for performance reasons (neil: I tried it and did not work as well as expected)
+        # Update the learning rate (now enabled for performance reasons (neil: I tried it and did work  much better than expected)
         scheduler.step() 
         
         # Save model after each epoch if save_model flag is True
