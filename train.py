@@ -26,10 +26,10 @@ def train():
     annotations_path = input("Enter the annotations path (or press Enter to use the default path): ")
 
     if not images_path:
-        images_path = "/Users/nde-la-f/Documents/Image_caption/flickr8k/images/"
+        images_path = "/home/xnmaster/PIXTALES_Image-Captioning-4/8k_Images"
 
     if not annotations_path:
-        annotations_path = "/Users/nde-la-f/Documents/Image_caption/flickr8k/captions.txt"
+        annotations_path = "/home/xnmaster/PIXTALES_Image-Captioning-4/train_captions8k.txt"
 
     # Get the data loader and dataset
     train_loader, dataset = get_loader(
@@ -55,7 +55,7 @@ def train():
     vocab_size = len(dataset.vocab)  # Size of the vocabulary
     learning_rate = 3e-4  # Learning rate for the optimizer
     num_epochs = 10  # Number of training epochs
-    num_layers = 4  # Number of layers in the RNN
+    num_layers = 2 # Number of layers in the RNN
 
     # Create a SummaryWriter for TensorBoard visualization
     writer = SummaryWriter("runs/flickr")
@@ -98,7 +98,7 @@ def train():
             optimizer.zero_grad()  # Zero the gradients
             loss.backward()  # Perform backward pass to calculate gradients
             optimizer.step()  # Update the weights using the gradients
-            
+            scheduler.step() # Update scheduler
             total_loss += loss.item()
             
             if (idx + 1) % print_every == 0:
@@ -117,7 +117,7 @@ def train():
                 "scheduler": scheduler.state_dict(),
                 "step": step,
             }
-            save_checkpoint(checkpoint, "checkpoint"+str{epoch + 1}+".pth")
+            save_checkpoint(checkpoint, "checkpoint"+str(epoch + 1)+".pth")
         
 
     # Plot the training loss curve
