@@ -57,7 +57,7 @@ def train():
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
     
     # Adjust the learning rate every 3 epochs by multiplying it with 0.1
-    #scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.6)
+    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.8)
     
     # Load saved checkpoint if the load_model flag is True
     if load_model:
@@ -103,8 +103,7 @@ def train():
             # Update the weights using the calculated gradients
             optimizer.step()  
             
-            # Update the learning rate (now disabled for performance reasons (neil: I tried it and did not work as well as expected)
-            #scheduler.step() 
+            
             
             total_loss += loss.item()
 
@@ -116,12 +115,16 @@ def train():
         epoch_loss = total_loss / len(train_loader)
         train_loss_values.append(epoch_loss)
         print(f"End of Epoch [{epoch+1}/{num_epochs}], Loss: {epoch_loss:.4f}")
-
+        
+        # Update the learning rate (now disabled for performance reasons (neil: I tried it and did not work as well as expected)
+        scheduler.step() 
+        
         # Save model after each epoch if save_model flag is True
         if save_model:
             checkpoint = {
                 "state_dict": model.state_dict(),
                 "optimizer": optimizer.state_dict(),
+                "scheduler": scheduler.state_dict(),
                 "step": step,
             }
             save_checkpoint(checkpoint, "checkpoint_attention"+str(epoch+1)+".pth")
@@ -138,6 +141,7 @@ def train():
         checkpoint = {
             "state_dict": model.state_dict(),
             "optimizer": optimizer.state_dict(),
+            "scheduler": scheduler.state_dict(),
             "step": step,
         }
         save_checkpoint(checkpoint, "final_checkpoint_attention.pth")
