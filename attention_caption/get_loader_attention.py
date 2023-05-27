@@ -1,9 +1,4 @@
-# Text -> Numbers
-# Need of a vocabulary that maps each word to an id
-# Set Up Pytorch dataset to load the data
-# Set up padding of every batch (all examples need to have same seqlen)
-# Set up DataLoader
-
+#import necessary libraries
 import os               # For operating system related operations like path management
 import pandas as pd     # For handling dataframes
 import torch            # The main PyTorch library
