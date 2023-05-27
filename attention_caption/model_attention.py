@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn
 import torchvision.models as models
+import torch.nn.functional as F
+
 
 # Encoder part of the model using a pre-trained VGG16
 class EncoderCNN(nn.Module):
