@@ -5,7 +5,6 @@ import torch.optim as optim
 import torchvision.transforms as transforms
 import matplotlib.pyplot as plt
 from torch.utils.tensorboard import SummaryWriter
-from datetime import datetime
 
 
 def train():
@@ -75,7 +74,6 @@ def train():
     # Begin training loop
     for epoch in range(num_epochs):
         total_loss = 0.0  # Track total loss within each epoch
-        start_time = time()  # Start timing the epoch
 
         for idx, (imgs, captions) in enumerate(train_loader):
             # Move images and captions to the GPU if available
@@ -108,7 +106,7 @@ def train():
 
             # Print out loss every 'print_every' steps
             if (idx + 1) % print_every == 0:
-                print(f'Epoch [{epoch+1}/{num_epochs}], Step [{idx+1}/{len(train_loader)}], Loss: {loss.item()}, Time: {time()}')
+                print(f'Epoch [{epoch+1}/{num_epochs}], Step [{idx+1}/{len(train_loader)}], Loss: {loss.item()}')
 
         # Calculate and print out the average loss for the epoch
         epoch_loss = total_loss / len(train_loader)
