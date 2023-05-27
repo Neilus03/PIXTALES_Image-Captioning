@@ -1,10 +1,14 @@
 # PIXTALES
 
-Welcome to PIXTALES - The story behind the picture, a deep learning approach to image captioning. The magic behind this repository is all about connecting visuals to language - generating a narrative for every image. Our project is driven by the power of neural networks and deep learning, aiming to create meaningful and accurate descriptions for any image.
+Welcome to PIXTALES - The story behind the picture, a deep learning approach to image captioning. The magic behind this repository is all about connecting visuals to language - generating a narrative for every image. Our project is driven by the power of neural networks and deep learning, aiming to create meaningful and accurate descriptions for any image. 
 
 ## What is PIXTALES?
 
-PIXTALES is a project that uses a combination of Convolutional Neural Networks (CNN) and Recurrent Neural Networks (RNN) to create a model capable of describing the content of images. We utilize the CNN as an "encoder" to transform an input image into a complex feature representation, and the RNN acts as a "decoder", turning those features into a rich, human-readable text.
+PIXTALES is a project that uses a combination of Convolutional Neural Networks (CNN) and Recurrent Neural Networks (RNN) to create a model capable of describing the content of images. We utilize the CNN as an "encoder" to transform an input image into a complex feature representation, and the RNN acts as a "decoder", turning those features into a rich, human-readable text. 
+
+## Goals
+
+Our Objective is to implement different models with different configurations and structures that are able to train and provide some results, and highlight the best results. Another goal is to try different ways to test our model, using different metrics and testing it with different datasets such as COCO dataset or Flickr30k dataset, but in principle we are going to use the Flickr8k dataset.
 
 ## Getting Started
 
@@ -12,6 +16,12 @@ First, you need to set clone this repository in your local (or virtual) machine
 
 ```
 git clone git@github.com:Neilus03/PIXTALES_Image-Captioning.git
+```
+
+You will need to install the needed libraries and set up a good environment with pytorch, spacy, PIL and many more. You will also need to download the en_core_web_sm language model using:
+
+```
+python -m spacy download en_core_web_sm
 ```
 
 Next, to run the example code, simply use:
@@ -41,10 +51,11 @@ This project is an exciting journey into the intersection of computer vision and
 ## Contributors
 Write here the name and UAB mail of the group members
 
-Xarxes Neuronals i Aprenentatge Profund
-Grau de __Write here the name of your estudies (Artificial Intelligence, Data Engineering or Computational Mathematics & Data analyitics)__, 
-UAB, 2023
+Subject: Neural Networks and Deep Learning.
 
+Degreee in Artificial Intelligence, 2n course.
+
+UAB, 2023.
 
 Authors:
   Neil De La Fuente
