@@ -59,8 +59,8 @@ class FlickrDataset(Dataset):
         if self.dataset == 'COCO':
             self.df = pd.read_csv(captions_file)
             self.df = self.df.dropna()
-            self.imgs = self.df['image_id']
-            self.captions = self.df['caption']
+            self.imgs = self.df['Filename']
+            self.captions = self.df['Caption']
             
         elif dataset == 'flickr8k' or dataset == 'flickr30k':
             self.df = pd.read_csv(captions_file)
