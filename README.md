@@ -24,12 +24,22 @@ You will need to install the needed libraries and set up a good environment with
 python -m spacy download en_core_web_sm
 ```
 
-Next, to run the example code, simply use:
+Next, to train the code, simply use:
 
 ```
 python train.py
 ```
+If you want to use our already trained model just load the checkpoint you can download from here:
 
+```
+path_to_download_checkpoint
+```
+
+and run evaluation:
+
+```
+python evaluation.py
+```
 ## Code Structure
 
 The code in this repository primarily consists of a model implementation (CNNtoRNN), a dataset loading function (get_loader), and a main file that orchestrates model evaluation. It provides utility functions for generating and visualizing image captions and calculating BLEU scores, a popular metric for evaluating the quality of generated text in comparison to reference text.
