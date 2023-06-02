@@ -65,9 +65,10 @@ Subject: Neural Networks and Deep Learning.
 
 Degreee in Artificial Intelligence, 2n course.
 
-UAB, 2023.
+UAB , 2023.
 
 Authors:
   Neil De La Fuente
   Maiol Sabater
   Daniel Vidal
+ 
