@@ -48,7 +48,7 @@ In `main.py`, the model is loaded from a checkpoint file and used to generate ca
 
 ## Model Evaluation
 
-Our evaluation focuses on two areas: the BLEU score and a visual inspection of the generated captions. The BLEU score gives us a quantitative measure of our model's performance, while the visual inspection of the generated captions lets us qualitatively assess the model's output.
+Our evaluation focuses on two areas: the BLEU score and a visual inspection of the generated captions. The BLEU score gives us a quantitative measure of our model's performance, while the visual inspection of the generated captions lets us qualitatively assess the model's output. (to run the app remember to change the port)
 
 ## Final Words
 
