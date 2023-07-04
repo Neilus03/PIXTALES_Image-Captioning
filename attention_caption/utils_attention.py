@@ -20,5 +20,5 @@ def load_checkpoint(checkpoint, model, optimizer):
     
     step = checkpoint['step']
     
-    print("Checkpoint loaded!")
+    print("Checkpoint Loaded!")
     return step
