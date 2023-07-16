@@ -11,7 +11,7 @@ from model import CNNtoRNN
 
 
 def train():
-    # Define the image transformations
+    # Define the image transformations to use
     transform = transforms.Compose(
         [
             transforms.Resize((356, 356)),  # Resize the image to a specific size
