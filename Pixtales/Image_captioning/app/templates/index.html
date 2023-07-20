@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Captioning Demo</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#upload-form').submit(function(event) {
+                event.preventDefault();
+                var formData = new FormData(this);
+
+                $.ajax({
+                    url: '/predict',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        // Display the predicted caption and image URL
+                        $('#predicted-caption').text(response.caption);
+                        $('#predicted-image').attr('src', response.image_url);
+                        $('#predicted-result').show();
+                    },
+                    error: function() {
+                        alert('An error occurred during prediction.');
+                    }
+                });
+            });
+        });
+    </script>
+    <style>
+        body {
+            background-image: url("{{ url_for('static', filename='Background.jpeg') }}");
+            background-repeat: no-repeat;
+            background-size: cover;
+            
+        }
+
+        #predicted-result {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+            color: white;
+        }
+
+        form {
+            text-align: center;
+            color: white;
+        }
+
+        .custom-upload-button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .custom-upload-button:hover {
+            background-color: #45a049;
+        }
+
+        .custom-file-input {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <form id="upload-form" enctype="multipart/form-data" style="text-align: center;">
+        <label for="image-upload" class="custom-upload-button">Select an Image</label>
+        <input id="image-upload" type="file" name="image" accept="image/*" class="custom-file-input" required>
+        <button type="submit" class="custom-upload-button">Upload</button>
+    </form>
+    <div id="predicted-result">
+        <h2>Predicted Caption:</h2>
+        <p id="predicted-caption"></p>
+        <img id="predicted-image" src="" alt="Predicted Image">
+    </div>
+</body>
+</html>
