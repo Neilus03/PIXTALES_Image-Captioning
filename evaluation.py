@@ -4,7 +4,7 @@ import torch.optim as optim
 import torchvision.transforms as transforms
 from nltk.translate.bleu_score import sentence_bleu
 import matplotlib.pyplot as plt
-import os
+import os  
 import base64
 from PIL import Image
 from io import BytesIO
