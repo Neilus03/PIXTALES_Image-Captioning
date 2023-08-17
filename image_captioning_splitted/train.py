@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 import torchvision.transforms as transforms
 import matplotlib.pyplot as plt
-from torch.utils.tensorboard import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter 
 
 from utils import save_checkpoint, load_checkpoint
 from get_loader import get_loader
