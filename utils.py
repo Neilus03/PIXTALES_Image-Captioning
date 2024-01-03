@@ -1,7 +1,7 @@
 import torch
 import torch.nn.functional as F
 import numpy as np
-
+ 
 def save_checkpoint(state, filename="checkpoint.pth"):
     #save the checkpoint in the file passed by parameter that later will be used.
     
